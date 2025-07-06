@@ -1,3 +1,5 @@
+<img src="docs/dinolang.png" alt="apelang" width="200"/>
+
 # DinoLang: From the before
 
 > Scientist had to use advanced technology to bring this programming language back to life.
