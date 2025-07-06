@@ -1,0 +1,12 @@
+FOSSIL myString = "Hello, Dino!";
+ROAR myString;
+
+FOSSIL name = ""; # string has to be initialized.
+ROAR "What's your name, Dino?";
+HERD name;
+ROAR "Nice to meet you, ";
+ROAR name;
+ROAR "!";
+
+FOSSIL num = GROW 10 5;
+ROAR num;
