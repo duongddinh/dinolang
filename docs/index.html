@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="dinolang.png">
+
+    <title>DinoLang Playground</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
+
+        :root {
+            --background: #36453b;
+            --container-bg: #fdf5e6;
+            --primary-text: #4a3c2f;
+            --secondary-text: #6b705c;
+            --accent-color: #e76f51;
+            --accent-hover: #d65f40;
+            --error-color: #c0392b;
+            --error-hover: #a52a2a;
+            --success-color: #6a9955;
+            --success-hover: #5a8844;
+            --code-bg: #2c3e2e;
+            --code-text: #f0f0f0;
+            --border-color: #b0a090;
+            --shadow-color: rgba(0, 0, 0, 0.15);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background);
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            color: var(--primary-text);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            background-color: var(--container-bg);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px var(--shadow-color);
+            padding: 2.5rem;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            text-align: center;
+            color: var(--primary-text);
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: var(--secondary-text);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .subtitle a {
+            color: var(--success-color);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .subtitle a:hover {
+            color: var(--success-hover);
+            text-decoration: underline;
+        }
+
+        .code-section label {
+            display: block;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-text);
+            margin-bottom: 1rem;
+        }
+
+        textarea.code-input {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 1rem;
+            border-radius: 12px;
+            border: 1px solid #3a3a3a;
+            font-family: 'Fira Code', monospace;
+            font-size: 1rem;
+            width: 100%;
+            min-height: 350px;
+            resize: vertical;
+            box-sizing: border-box;
+            line-height: 1.6;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .button {
+            background-color: var(--accent-color);
+            color: white; 
+            padding: 14px 28px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .button:hover {
+            background-color: var(--accent-hover);
+            transform: translateY(-2px);
+        }
+
+        .button.clear {
+            background-color: var(--error-color);
+            color: white;
+        }
+
+        .button.clear:hover {
+            background-color: var(--error-hover);
+        }
+
+        .status-block {
+            background-color: #fdfdfd;
+            color: var(--secondary-text);
+            padding: 1rem;
+            border-radius: 12px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            border: 1px solid var(--border-color);
+            margin-top: 2rem;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .status-block.success {
+            border-left: 5px solid var(--success-color);
+            background-color: #eff7ec;
+        }
+
+        .status-block.error {
+            border-left: 5px solid var(--error-color);
+            background-color: #fcecec;
+        }
+
+        .output-block {
+            background-color: var(--code-bg);
+            color: #e0e0e0;
+            padding: 1rem;
+            border-radius: 12px;
+            min-height: 150px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            margin-top: 1rem;
+        }
+
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0s 0.3s;
+        }
+
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+            transition-delay: 0s;
+        }
+
+        .modal-content {
+            background-color: var(--container-bg);
+            padding: 2rem;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal.show .modal-content {
+            transform: scale(1);
+        }
+        
+        .modal-content p {
+            font-size: 1.2rem;
+            color: var(--primary-text);
+            margin-bottom: 1.5rem;
+        }
+        
+        .modal-input {
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border-color);
+            background-color: #fff;
+            color: var(--primary-text);
+            border-radius: 10px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        
+        .modal-button {
+            background-color: var(--success-color);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+        
+        .modal-button:hover {
+            background-color: var(--success-hover);
+            transform: translateY(-2px);
+        }
+        .page-icon {
+            display: block;
+            margin: 1rem auto 1.5rem; 
+            width: 100px; 
+            height: auto;
+        }
+        .about-section {
+            background-color: #f7fcfc; 
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .about-section h2, .about-section h3 {
+            color: var(--primary-text);
+            text-align: left;
+            margin-bottom: 0.75rem;
+        }
+
+        .about-section p, .about-section li {
+            color: var(--secondary-text);
+            line-height: 1.7;
+            text-align: left;
+        }
+
+        .about-section ul {
+            padding-left: 20px;
+            margin-top: 0;
+        }
+
+        .about-section li {
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🦖 DinoLang Playground 🦕</h1>
+        <img src="dinolang.png" alt="DinoLang Icon" class="page-icon">
+        <p class="subtitle">
+            A prehistoric programming language for the digital age.
+        </p>
+        <div class="about-section">
+            <h2>Welcome to DinoLang!</h2>
+            <p>
+                Step back in time to the Mesozoic era of programming! DinoLang is a primal, yet powerful, language designed for simple, direct operations. Forget complex frameworks and modern paradigms; DinoLang gets straight to the point, just like a hungry T-Rex.
+            </p>
+            <p>
+                Inspired by the raw power of assembly, DinoLang provides direct control over variables and basic arithmetic, making it perfect for understanding fundamental programming concepts without getting lost in abstraction.
+            </p>
+
+            <h3>Features</h3>
+            <ul>
+                <li><strong>Variables (FOSSIL):</strong> Declare and assign integer or string values to your data. Think of them as ancient artifacts holding precious numbers or messages.</li>
+                <li><strong>Arithmetic (GROW, SHRINK, HATCH, SPLIT):</strong> Perform basic addition, subtraction, multiplication, and division on integers. These operations are expressed in a prefix notation, reflecting the directness of dinosaur actions.
+                    <ul>
+                        <li><code>GROW A B</code>: A + B</li>
+                        <li><code>SHRINK A B</code>: A - B</li>
+                        <li><code>HATCH A B</code>: A * B</li>
+                        <li><code>SPLIT A B</code>: A / B (integer division)</li>
+                    </ul>
+                </li>
+                <li><strong>Output (ROAR):</strong> Make your program roar! Print the value of variables or expressions (integers or strings) to the jungle output.</li>
+                <li><strong>Input (HERD):</strong> Gather information from the herd! Use <code>HERD variable_name;</code> to prompt the user for input and store it as a string.</li>
+                <li><strong>Comments (#):</strong> Use the hash symbol to add comments to your code, because even dinosaurs needed notes.</li>
+            </ul>
+        </div>
+        <div class="code-section">
+            <label for="codeInput">Scribble your Dino Code:</label>
+            <textarea id="codeInput" class="code-input" placeholder="Type your DinoLang code here...">
+# DinoLang Playground Example
+FOSSIL my_age = 30;
+FOSSIL birth_year = 1995;
+FOSSIL current_year = GROW birth_year 29; # 1995 + 29 = 2024
+
+ROAR my_age;
+ROAR current_year;
+
+FOSSIL num1 = HATCH 10 5; # 10 * 5 = 50
+ROAR num1;
+
+FOSSIL num2 = SPLIT 100 4; # 100 / 4 = 25
+ROAR num2;
+
+FOSSIL result = SHRINK (GROW 50 20) 15; # (50 + 20) - 15 = 70 - 15 = 55
+ROAR result;
+
+FOSSIL greeting = "Hello from the jungle!";
+ROAR greeting;
+
+FOSSIL question = "What is your favorite dinosaur?";
+ROAR question;
+HERD dino_name;
+ROAR GROW "You like " dino_name; # Example of string concatenation (will be implemented as string + string)
+ROAR "That's a great choice!";
+            </textarea>
+        </div>
+
+        <div class="button-group">
+            <button id="runCodeBtn" class="button">Go Roar! 🦖</button>
+            <button id="clearOutputBtn" class="button clear">Clear Jungle</button>
+        </div>
+
+        <div class="code-section">
+            <label for="compilationStatus">Dino Echoes (Compiler):</label>
+            <pre id="compilationStatus" class="status-block"></pre>
+        </div>
+
+        <div class="code-section">
+            <label for="outputArea">Jungle Output:</label>
+            <pre id="outputArea" class="output-block"></pre>
+        </div>
+
+        <div id="askModal" class="modal">
+            <div class="modal-content">
+                <p id="askPrompt">The jungle asks:</p>
+                <input type="text" id="askInput" class="modal-input" placeholder="Chitter your response...">
+                <button id="askSubmitBtn" class="modal-button">Ook!</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class TokenType {
+            static EOF = 'EOF';
+            static FOSSIL = 'FOSSIL';
+            static ROAR = 'ROAR';
+            static GROW = 'GROW';
+            static SHRINK = 'SHRINK';
+            static HATCH = 'HATCH';
+            static SPLIT = 'SPLIT';
+            static HERD = 'HERD'; 
+
+            static IDENTIFIER = 'IDENTIFIER';
+            static INTEGER = 'INTEGER';
+            static STRING = 'STRING'; 
+
+            static ASSIGN = 'ASSIGN';
+            static LPAREN = 'LPAREN';
+            static RPAREN = 'RPAREN';
+            static SEMICOLON = 'SEMICOLON';
+        }
+
+        class Token {
+            constructor(type, value, line = null, column = null) {
+                this.type = type;
+                this.value = value;
+                this.line = line;
+                this.column = column;
+            }
+            toString() {
+                return `Token(${this.type}, ${JSON.stringify(this.value)}, Line: ${this.line}, Col: ${this.column})`;
+            }
+        }
+
+        class Lexer {
+            constructor(text) {
+                this.text = text;
+                this.pos = 0;
+                this.current_char = text.length > 0 ? text[0] : null;
+                this.line = 1;
+                this.column = 1;
+
+                this.keywords = {
+                    'FOSSIL': TokenType.FOSSIL,
+                    'ROAR': TokenType.ROAR,
+                    'GROW': TokenType.GROW,
+                    'SHRINK': TokenType.SHRINK,
+                    'HATCH': TokenType.HATCH,
+                    'SPLIT': TokenType.SPLIT,
+                    'HERD': TokenType.HERD, 
+                };
+            }
+
+            _advance() {
+                if (this.current_char === '\n') {
+                    this.line += 1;
+                    this.column = 1;
+                } else {
+                    this.column += 1;
+                }
+                this.pos += 1;
+                this.current_char = this.pos < this.text.length ? this.text[this.pos] : null;
+            }
+
+            _skip_whitespace() {
+                while (this.current_char !== null && /\s/.test(this.current_char)) {
+                    this._advance();
+                }
+            }
+
+            _skip_comment() {
+                while (this.current_char !== null && this.current_char !== '\n') {
+                    this._advance();
+                }
+                if (this.current_char === '\n') {
+                    this._advance();
+                }
+            }
+
+            _integer() {
+                let result = '';
+                const startColumn = this.column;
+                while (this.current_char !== null && /\d/.test(this.current_char)) {
+                    result += this.current_char;
+                    this._advance();
+                }
+                return new Token(TokenType.INTEGER, parseInt(result), this.line, startColumn);
+            }
+
+            _string() { 
+                const startColumn = this.column;
+                this._advance(); 
+                let result = '';
+                while (this.current_char !== null && this.current_char !== '"') {
+                    if (this.current_char === '\\') {
+                        this._advance();
+                        switch (this.current_char) {
+                            case 'n': result += '\n'; break;
+                            case 't': result += '\t'; break;
+                            case '"': result += '"'; break;
+                            case '\\': result += '\\'; break;
+                            default: result += '\\' + this.current_char;
+                        }
+                    } else {
+                        result += this.current_char;
+                    }
+                    this._advance();
+                }
+
+                if (this.current_char !== '"') {
+                    throw new Error(`Lexer Error: Unterminated string literal at Line ${this.line}, Col ${startColumn}`);
+                }
+
+                this._advance();
+                return new Token(TokenType.STRING, result, this.line, startColumn);
+            }
+
+            _identifier() {
+                let result = '';
+                const startColumn = this.column;
+                while (this.current_char !== null && (/[a-zA-Z0-9_]/.test(this.current_char))) {
+                    result += this.current_char;
+                    this._advance();
+                }
+                const tokenType = this.keywords[result.toUpperCase()] || TokenType.IDENTIFIER;
+                return new Token(tokenType, result, this.line, startColumn);
+            }
+
+            get_next_token() {
+                while (this.current_char !== null) {
+                    if (/\s/.test(this.current_char)) {
+                        this._skip_whitespace();
+                        continue;
+                    }
+
+                    if (this.current_char === '#') {
+                        this._skip_comment();
+                        continue;
+                    }
+
+                    if (/\d/.test(this.current_char)) {
+                        return this._integer();
+                    }
+
+                    if (this.current_char === '"') { 
+                        return this._string();
+                    }
+
+                    if (/[a-zA-Z_]/.test(this.current_char)) {
+                        return this._identifier();
+                    }
+
+                    if (this.current_char === '=') {
+                        const token = new Token(TokenType.ASSIGN, this.current_char, this.line, this.column);
+                        this._advance();
+                        return token;
+                    }
+
+                    if (this.current_char === '(') {
+                        const token = new Token(TokenType.LPAREN, this.current_char, this.line, this.column);
+                        this._advance();
+                        return token;
+                    }
+
+                    if (this.current_char === ')') {
+                        const token = new Token(TokenType.RPAREN, this.current_char, this.line, this.column);
+                        this._advance();
+                        return token;
+                    }
+
+                    if (this.current_char === ';') {
+                        const token = new Token(TokenType.SEMICOLON, this.current_char, this.line, this.column);
+                        this._advance();
+                        return token;
+                    }
+
+                    throw new Error(`Lexer Error: Unexpected character ${this.current_char} at Line ${this.line}, Col ${this.column}`);
+                }
+                return new Token(TokenType.EOF, null, this.line, this.column);
+            }
+        }
+
+        class AST {}
+
+        class Program extends AST {
+            constructor(statements) {
+                super();
+                this.statements = statements;
+            }
+        }
+
+        class VariableDeclaration extends AST {
+            constructor(identifier, expression) {
+                super();
+                this.identifier = identifier;
+                this.expression = expression;
+            }
+        }
+
+        class BinaryOp extends AST {
+            constructor(left, op, right) {
+                super();
+                this.left = left;
+                this.op = op;
+                this.right = right;
+            }
+        }
+
+        class NumberNode extends AST {
+            constructor(token) {
+                super();
+                this.token = token;
+                this.value = token.value;
+            }
+        }
+
+        class StringNode extends AST { 
+            constructor(token) {
+                super();
+                this.token = token;
+                this.value = token.value;
+            }
+        }
+
+        class IdentifierNode extends AST {
+            constructor(token) {
+                super();
+                this.token = token;
+                this.name = token.value;
+            }
+        }
+
+        class PrintStatement extends AST {
+            constructor(expression) {
+                super();
+                this.expression = expression;
+            }
+        }
+
+        class InputStatement extends AST { 
+            constructor(identifier) {
+                super();
+                this.identifier = identifier;
+            }
+        }
+
+        class Parser {
+            constructor(lexer) {
+                this.lexer = lexer;
+                this.current_token = this.lexer.get_next_token();
+            }
+
+            _error(message = "Invalid syntax") {
+                throw new Error(`Parser Error: ${message} at Line ${this.current_token.line}, Col ${this.current_token.column}. Current token: ${this.current_token}`);
+            }
+
+            _eat(token_type) {
+                if (this.current_token.type === token_type) {
+                    this.current_token = this.lexer.get_next_token();
+                } else {
+                    this._error(`Expected token type ${token_type}, got ${this.current_token.type}`);
+                }
+            }
+
+            _factor() {
+                const token = this.current_token;
+                if (token.type === TokenType.INTEGER) {
+                    this._eat(TokenType.INTEGER);
+                    return new NumberNode(token);
+                } else if (token.type === TokenType.STRING) { 
+                    this._eat(TokenType.STRING);
+                    return new StringNode(token);
+                } else if (token.type === TokenType.IDENTIFIER) {
+                    this._eat(TokenType.IDENTIFIER);
+                    return new IdentifierNode(token);
+                } else if (token.type === TokenType.LPAREN) {
+                    this._eat(TokenType.LPAREN);
+                    const node = this._expr();
+                    this._eat(TokenType.RPAREN);
+                    return node;
+                } else {
+                    this._error("Expected an integer, string, identifier, or '('");
+                }
+            }
+
+            _expr() {
+                const token = this.current_token;
+                if ([TokenType.GROW, TokenType.SHRINK, TokenType.HATCH, TokenType.SPLIT].includes(token.type)) {
+                    const op_token = token;
+                    this._eat(op_token.type);
+                    const left_operand = this._expr();
+                    const right_operand = this._expr();
+                    return new BinaryOp(left_operand, op_token, right_operand);
+                } else {
+                    return this._factor();
+                }
+            }
+
+            _variable_declaration_statement() {
+                this._eat(TokenType.FOSSIL);
+                const identifier_token = this.current_token;
+                this._eat(TokenType.IDENTIFIER);
+                this._eat(TokenType.ASSIGN);
+                const expression_node = this._expr();
+                this._eat(TokenType.SEMICOLON);
+                return new VariableDeclaration(identifier_token, expression_node);
+            }
+
+            _print_statement() {
+                this._eat(TokenType.ROAR);
+                const expression_node = this._expr();
+                this._eat(TokenType.SEMICOLON);
+                return new PrintStatement(expression_node);
+            }
+
+            _input_statement() { 
+                this._eat(TokenType.HERD);
+                const identifier_token = this.current_token;
+                this._eat(TokenType.IDENTIFIER);
+                this._eat(TokenType.SEMICOLON);
+                return new InputStatement(identifier_token);
+            }
+
+            _statement() {
+                if (this.current_token.type === TokenType.FOSSIL) {
+                    return this._variable_declaration_statement();
+                } else if (this.current_token.type === TokenType.ROAR) {
+                    return this._print_statement();
+                } else if (this.current_token.type === TokenType.HERD) { 
+                    return this._input_statement();
+                } else {
+                    this._error("Expected a variable declaration (FOSSIL), print statement (ROAR), or input statement (HERD)");
+                }
+            }
+
+            parse() {
+                const statements = [];
+                while (this.current_token.type !== TokenType.EOF) {
+                    statements.push(this._statement());
+                }
+                return new Program(statements);
+            }
+        }
+
+        class Interpreter {
+            constructor(outputBuffer, askCallback) {
+                this.variables = {};
+                this.outputBuffer = outputBuffer;
+                this.askCallback = askCallback; 
+            }
+
+            async visit(node) { 
+                if (node instanceof Program) return await this.visitProgram(node);
+                if (node instanceof VariableDeclaration) return await this.visitVariableDeclaration(node);
+                if (node instanceof BinaryOp) return await this.visitBinaryOp(node);
+                if (node instanceof NumberNode) return this.visitNumberNode(node);
+                if (node instanceof StringNode) return this.visitStringNode(node); 
+                if (node instanceof IdentifierNode) return this.visitIdentifierNode(node);
+                if (node instanceof PrintStatement) return await this.visitPrintStatement(node);
+                if (node instanceof InputStatement) return await this.visitInputStatement(node);
+                throw new Error(`Interpreter Error: No visit method for ${node.constructor.name}`);
+            }
+
+            async visitProgram(node) {
+                for (const statement of node.statements) {
+                    await this.visit(statement); 
+                }
+            }
+
+            async visitVariableDeclaration(node) {
+                const varName = node.identifier.value;
+                const value = await this.visit(node.expression); 
+                this.variables[varName] = value;
+            }
+
+            async visitBinaryOp(node) {
+                const left = await this.visit(node.left);
+                const right = await this.visit(node.right); 
+
+                if (node.op.type === TokenType.GROW) {
+                    if (typeof left === 'string' || typeof right === 'string') {
+                        return String(left) + String(right); 
+                    } else if (typeof left === 'number' && typeof right === 'number') {
+                        return left + right;
+                    } else {
+                        throw new Error(`Runtime Error: GROW operation requires both operands to be numbers for arithmetic, or at least one to be a string for concatenation. Got ${typeof left} and ${typeof right}.`);
+                    }
+                } else {
+                    if (typeof left !== 'number' || typeof right !== 'number') {
+                        throw new Error(`Runtime Error: Arithmetic operations (SHRINK, HATCH, SPLIT) can only be performed on numbers. Got ${typeof left} and ${typeof right}.`);
+                    }
+
+                    switch (node.op.type) {
+                        case TokenType.SHRINK: return left - right;
+                        case TokenType.HATCH: return left * right;
+                        case TokenType.SPLIT:
+                            if (right === 0) throw new Error("Runtime Error: Division by zero!");
+                            return Math.floor(left / right); 
+                        default:
+                            throw new Error(`Interpreter Error: Unknown binary operator ${node.op.type}`);
+                    }
+                }
+            }
+
+            visitNumberNode(node) {
+                return node.value;
+            }
+
+            visitStringNode(node) { 
+                return node.value;
+            }
+
+            visitIdentifierNode(node) {
+                if (!(node.name in this.variables)) {
+                    throw new Error(`Runtime Error: Undeclared variable '${node.name}' at Line ${node.token.line}, Col ${node.token.column}`);
+                }
+                return this.variables[node.name];
+            }
+
+            async visitPrintStatement(node) {
+                const value = await this.visit(node.expression); 
+                this.outputBuffer.push(String(value));
+            }
+
+            async visitInputStatement(node) {
+                const varName = node.identifier.value;
+                const inputValue = await this.askCallback();
+                this.variables[varName] = inputValue;
+            }
+        }
+
+
+        const codeInput = document.getElementById('codeInput');
+        const outputArea = document.getElementById('outputArea');
+        const compilationStatus = document.getElementById('compilationStatus');
+        const runCodeBtn = document.getElementById('runCodeBtn');
+        const clearOutputBtn = document.getElementById('clearOutputBtn');
+        const askModal = document.getElementById('askModal');
+        const askPrompt = document.getElementById('askPrompt');
+        const askInput = document.getElementById('askInput');
+        const askSubmitBtn = document.getElementById('askSubmitBtn');
+
+        const initialOutputText = "";
+
+        let outputBuffer = [];
+        let askResolve = null; 
+
+        function initializePlayground() {
+            outputArea.textContent = initialOutputText;
+            compilationStatus.textContent = 'Ready for some prehistoric programming...';
+            compilationStatus.classList.remove('success', 'error');
+            outputBuffer = []; 
+            askModal.classList.remove('show'); 
+        }
+
+        async function requestInputFromUser() {
+            return new Promise(resolve => {
+                askPrompt.textContent = "The jungle asks:";
+                askInput.value = '';
+                askModal.classList.add('show');
+                askInput.focus();
+                askResolve = resolve;
+            });
+        }
+
+        askSubmitBtn.onclick = () => {
+            if (askResolve) {
+                askModal.classList.remove('show');
+                askResolve(askInput.value);
+                askResolve = null;
+            }
+        };
+
+        async function runDinoLangCode() {
+            outputBuffer = []; 
+            compilationStatus.classList.remove('success', 'error');
+            outputArea.textContent = initialOutputText; 
+
+            const code = codeInput.value;
+            
+            try {
+                const lexer = new Lexer(code);
+                
+                const parser = new Parser(lexer);
+                const ast = parser.parse();
+
+                const interpreterInstance = new Interpreter(outputBuffer, requestInputFromUser);
+                await interpreterInstance.visit(ast); 
+
+                compilationStatus.textContent = "Compilation and execution successful. ";
+                compilationStatus.classList.add('success');
+                outputArea.textContent = `${initialOutputText}\n\n${outputBuffer.join('\n')}`;
+
+            } catch (e) {
+                compilationStatus.textContent = `Dino Echoes are confused:\n${e.message}`;
+                compilationStatus.classList.add('error');
+                outputArea.textContent = `${initialOutputText}\n\nError occurred. Check Dino Echoes.`;
+            }
+            outputArea.scrollTop = outputArea.scrollHeight;
+        }
+        
+        document.addEventListener('DOMContentLoaded', initializePlayground);
+        runCodeBtn.addEventListener('click', runDinoLangCode);
+        clearOutputBtn.addEventListener('click', initializePlayground);
+    </script>
+</body>
+</html>
